@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RNN Sequence Predictor Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            💻 RNN Sequence Predictor</h1>
+        <p class="subtitle">A basic demonstration of a Recurrent Neural Network (RNN) that has been trained to predict a sequence's next number.</p>
+
+        <!-- RNN Explanation -->
+        <div class="info-box">
+            <h2> What is RNN? (Recurrent Neural Network) </h2>
+            <p>
+                A <strong>Recurrent Neural Network (RNN)</strong> is a type of neural network used to process sequential data, such as time series or text.
+                RNNs, unlike normal neural networks, keep a "memory" of prior inputs, enabling them to learn patterns over time.
+            </p>
+            <p>
+                Arithmetic sequences (such as <code>5, 7, 9, 11, etc.</code>) were used to train the RNN in this demo.
+                The model attempts to predict the subsequent number in the sequence after you input <strong>five numbers.</strong>
+            </p>
+        </div>
+
+        <!-- User Input -->
+        <p>Enter <strong>Exactly 5 Numbers</strong> separated by commas:</p>
+        <input type="text" id="sequence" placeholder="e.g., 5,7,9,11,13">
+        <button onclick="predict()">Predict Next Number</button>
+
+        <!-- Prediction Result -->
+        <p id="result"></p>
+    </div>
+
+    <script>
+        async function predict() {
+            const input = document.getElementById("sequence").value;
+            const seq = input.split(",").map(Number);
+
+            if (seq.length !== 5 || seq.some(isNaN)) {
+                document.getElementById("result").innerText = "❌ Please enter exactly 5 valid numbers.";
+                document.getElementById("result").className = "error";
+                return;
+            }
+
+            const response = await fetch("/predict_sequence", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sequence: seq })
+            });
+
+            const data = await response.json();
+            if (data.next_number !== undefined) {
+                document.getElementById("result").innerText = "✅ Next number: " + data.next_number.toFixed(2);
+                document.getElementById("result").className = "success";
+            } else {
+                document.getElementById("result").innerText = "❌ Error: " + data.error;
+                document.getElementById("result").className = "error";
+            }
+        }
+    </script>
+</body>
+</html>
